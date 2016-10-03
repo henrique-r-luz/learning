@@ -73,11 +73,15 @@ def train_feature_value(X, y_true, feature, value):
     # Create a simple dictionary to count how frequency they give certain predictions
     class_counts = defaultdict(int)
     # Iterate through each sample and count the frequency of each class/value pair
+
     for sample, y in zip(X, y_true):
+
         if sample[feature] == value:
             class_counts[y] += 1
+    print('value: ',value,' disc ',class_counts)
     # Now get the best one by sorting (highest first) and choosing the first item
     sorted_class_counts = sorted(class_counts.items(), key=itemgetter(1), reverse=True)
+    print(sorted_class_counts)
     most_frequent_class = sorted_class_counts[0][0]
     # The error is the number of samples that do not classify as the most frequent class
     # *and* have the feature value.
