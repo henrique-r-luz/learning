@@ -12,11 +12,16 @@ X = dataset.data
 y = dataset.target
 #X.shape, representa o número de linhas e colunas
 n_samples, n_features = X.shape
+#X.mean retorna a média dos atributos
 attribute_means = X.mean(axis=0)
+#esta função normaliza os dados , em que se o atributo for maior que a média
+#recebe o valor 1, se não recebe o valor 0
 X_d = np.array(X >= attribute_means, dtype='int')
 
-random_state = 14
+random_state = 42
+#esta função cria a base de teste e a de treinamento
 X_train, X_test, y_train, y_test = train_test_split(X_d, y, random_state=random_state)
+
 
 
 def train(X, y_true, feature):
@@ -48,17 +53,20 @@ def train(X, y_true, feature):
     n_samples, n_features = X.shape
     assert 0 <= feature < n_features
     # Get all of the unique values that this variable has
-    # recupera apenas os itens de uma coluna especifica, que é definida
-    # pela variável feature
+    # recupera apenas os itens de uma coluna específica, que é definida
+    # pela variável feature(coluna)
     values = set(X[:, feature])
 
 
     # Stores the predictors array that is returned
     predictors = dict()
     errors = []
+    #testa cada valor de uma coluna específica para verificar a classe mais frequente
     for current_value in values:
         most_frequent_class, error = train_feature_value(X, y_true, feature, current_value)
+        #predictors é o valor com a classe mais ferquente
         predictors[current_value] = most_frequent_class
+        #erros é  a soma dos resultados que não pertencem a classe mais frequente
         errors.append(error)
     # Compute the total error of using this feature to classify on
     total_error = sum(errors)
@@ -78,32 +86,40 @@ def train_feature_value(X, y_true, feature, value):
 
         if sample[feature] == value:
             class_counts[y] += 1
-    print('value: ',value,' disc ',class_counts)
     # Now get the best one by sorting (highest first) and choosing the first item
     sorted_class_counts = sorted(class_counts.items(), key=itemgetter(1), reverse=True)
-    print(sorted_class_counts)
+
     most_frequent_class = sorted_class_counts[0][0]
     # The error is the number of samples that do not classify as the most frequent class
     # *and* have the feature value.
-    n_samples = X.shape[1]
+    #n_samples = X.shape[1]
     error = sum([class_count for class_value, class_count in class_counts.items()
                  if class_value != most_frequent_class])
     return most_frequent_class, error
 
 #print([variable for variable in range(X_train.shape[1])])
-train(X_train, y_train, 0)
+#print(train(X_train, y_train, 0))
 #print(zip(X_train, y_train))
+#print(X_train.shape[1])
 # Compute all of the predictors
-'''all_predictors = {variable: train(X_train, y_train, variable) for variable in range(X_train.shape[1])}
+#X_train.shape[1] número de colunas da base de dados
+all_predictors = {variable: train(X_train, y_train, variable) for variable in range(X_train.shape[1])}
 errors = {variable: error for variable, (mapping, error) in all_predictors.items()}
 # Now choose the best and save that as "model"
 # Sort by error
 best_variable, best_error = sorted(errors.items(), key=itemgetter(1))[0]
-print("The best model is based on variable {0} and has error {1:.2f}".format(best_variable, best_error))
+#print("The best model is based on variable {0} and has error {1:.2f}".format(best_variable, best_error))
 
 # Choose the bset model
 model = {'variable': best_variable,
          'predictor': all_predictors[best_variable][0]}
-print(model)'''
 
 
+def predict(X_teste, modelo):
+    variavel  = modelo['variable']
+    predictor = modelo['predictor']
+    y_predicted = np.array([predictor[int(sample[variavel])] for sample in X_teste])
+    return y_predicted
+
+accuracy = np.mean(predict(X_test,model) == y_test) * 100
+print("The test accuracy is {:.1f}%".format(accuracy))
